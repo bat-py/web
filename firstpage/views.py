@@ -1,11 +1,26 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Post 
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Create your views here.
 
-def post_list(requests):
+def post_list(request):
     posts = Post.published.all()
-    return render(requests, 'firstpage/post/list.html', {'posts' : posts})
+
+    paginator = Paginator(posts, 3)
+    page = request.GET.get('page')
+
+    try:
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        posts = paginator.page(1)
+    except EmptyPage:
+        posts = paginator.page(paginator.num_pages)
+
+    return render(request,
+                  'firstpage/post/list.html', 
+                  {'posts' : posts, 'page':page}
+                 )
 
 
 def post_detail(requests, year, month, day, post):
